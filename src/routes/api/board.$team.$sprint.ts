@@ -1,12 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { readBoard, writeCell } from "@/lib/board-storage.server";
-import { cellKey, isSprint, isTeam } from "@/lib/board-constants";
+import { cellKey, isSprint, isTeamId } from "@/lib/board-constants";
 
 const BodySchema = z.object({
-  goals: z
-    .array(z.string().trim().min(1).max(280))
-    .max(20),
+  goals: z.array(z.string().trim().min(1).max(280)).max(20),
 });
 
 export const Route = createFileRoute("/api/board/$team/$sprint")({
@@ -14,7 +12,7 @@ export const Route = createFileRoute("/api/board/$team/$sprint")({
     handlers: {
       GET: async ({ params }) => {
         const { team, sprint } = params;
-        if (!isTeam(team) || !isSprint(sprint)) {
+        if (!isTeamId(team) || !isSprint(sprint)) {
           return new Response("Unknown team or sprint", { status: 404 });
         }
         const board = await readBoard();
@@ -23,7 +21,7 @@ export const Route = createFileRoute("/api/board/$team/$sprint")({
       },
       PUT: async ({ request, params }) => {
         const { team, sprint } = params;
-        if (!isTeam(team) || !isSprint(sprint)) {
+        if (!isTeamId(team) || !isSprint(sprint)) {
           return new Response("Unknown team or sprint", { status: 404 });
         }
         let body: unknown;

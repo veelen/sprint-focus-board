@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiBoardRouteImport } from './routes/api/board'
+import { Route as ApiTeamsTeamIdRouteImport } from './routes/api/teams.$teamId'
+import { Route as ApiBoardStartDateRouteImport } from './routes/api/board.start-date'
+import { Route as ApiBoardRollForwardRouteImport } from './routes/api/board.roll-forward'
 import { Route as ApiBoardTeamSprintRouteImport } from './routes/api/board.$team.$sprint'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +26,21 @@ const ApiBoardRoute = ApiBoardRouteImport.update({
   path: '/api/board',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTeamsTeamIdRoute = ApiTeamsTeamIdRouteImport.update({
+  id: '/api/teams/$teamId',
+  path: '/api/teams/$teamId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBoardStartDateRoute = ApiBoardStartDateRouteImport.update({
+  id: '/start-date',
+  path: '/start-date',
+  getParentRoute: () => ApiBoardRoute,
+} as any)
+const ApiBoardRollForwardRoute = ApiBoardRollForwardRouteImport.update({
+  id: '/roll-forward',
+  path: '/roll-forward',
+  getParentRoute: () => ApiBoardRoute,
+} as any)
 const ApiBoardTeamSprintRoute = ApiBoardTeamSprintRouteImport.update({
   id: '/$team/$sprint',
   path: '/$team/$sprint',
@@ -32,30 +50,59 @@ const ApiBoardTeamSprintRoute = ApiBoardTeamSprintRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/board': typeof ApiBoardRouteWithChildren
+  '/api/board/roll-forward': typeof ApiBoardRollForwardRoute
+  '/api/board/start-date': typeof ApiBoardStartDateRoute
+  '/api/teams/$teamId': typeof ApiTeamsTeamIdRoute
   '/api/board/$team/$sprint': typeof ApiBoardTeamSprintRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/board': typeof ApiBoardRouteWithChildren
+  '/api/board/roll-forward': typeof ApiBoardRollForwardRoute
+  '/api/board/start-date': typeof ApiBoardStartDateRoute
+  '/api/teams/$teamId': typeof ApiTeamsTeamIdRoute
   '/api/board/$team/$sprint': typeof ApiBoardTeamSprintRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/board': typeof ApiBoardRouteWithChildren
+  '/api/board/roll-forward': typeof ApiBoardRollForwardRoute
+  '/api/board/start-date': typeof ApiBoardStartDateRoute
+  '/api/teams/$teamId': typeof ApiTeamsTeamIdRoute
   '/api/board/$team/$sprint': typeof ApiBoardTeamSprintRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/board' | '/api/board/$team/$sprint'
+  fullPaths:
+    | '/'
+    | '/api/board'
+    | '/api/board/roll-forward'
+    | '/api/board/start-date'
+    | '/api/teams/$teamId'
+    | '/api/board/$team/$sprint'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/board' | '/api/board/$team/$sprint'
-  id: '__root__' | '/' | '/api/board' | '/api/board/$team/$sprint'
+  to:
+    | '/'
+    | '/api/board'
+    | '/api/board/roll-forward'
+    | '/api/board/start-date'
+    | '/api/teams/$teamId'
+    | '/api/board/$team/$sprint'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/board'
+    | '/api/board/roll-forward'
+    | '/api/board/start-date'
+    | '/api/teams/$teamId'
+    | '/api/board/$team/$sprint'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiBoardRoute: typeof ApiBoardRouteWithChildren
+  ApiTeamsTeamIdRoute: typeof ApiTeamsTeamIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -74,6 +121,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBoardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/teams/$teamId': {
+      id: '/api/teams/$teamId'
+      path: '/api/teams/$teamId'
+      fullPath: '/api/teams/$teamId'
+      preLoaderRoute: typeof ApiTeamsTeamIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/board/start-date': {
+      id: '/api/board/start-date'
+      path: '/start-date'
+      fullPath: '/api/board/start-date'
+      preLoaderRoute: typeof ApiBoardStartDateRouteImport
+      parentRoute: typeof ApiBoardRoute
+    }
+    '/api/board/roll-forward': {
+      id: '/api/board/roll-forward'
+      path: '/roll-forward'
+      fullPath: '/api/board/roll-forward'
+      preLoaderRoute: typeof ApiBoardRollForwardRouteImport
+      parentRoute: typeof ApiBoardRoute
+    }
     '/api/board/$team/$sprint': {
       id: '/api/board/$team/$sprint'
       path: '/$team/$sprint'
@@ -85,10 +153,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface ApiBoardRouteChildren {
+  ApiBoardRollForwardRoute: typeof ApiBoardRollForwardRoute
+  ApiBoardStartDateRoute: typeof ApiBoardStartDateRoute
   ApiBoardTeamSprintRoute: typeof ApiBoardTeamSprintRoute
 }
 
 const ApiBoardRouteChildren: ApiBoardRouteChildren = {
+  ApiBoardRollForwardRoute: ApiBoardRollForwardRoute,
+  ApiBoardStartDateRoute: ApiBoardStartDateRoute,
   ApiBoardTeamSprintRoute: ApiBoardTeamSprintRoute,
 }
 
@@ -99,7 +171,18 @@ const ApiBoardRouteWithChildren = ApiBoardRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiBoardRoute: ApiBoardRouteWithChildren,
+  ApiTeamsTeamIdRoute: ApiTeamsTeamIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
