@@ -100,6 +100,16 @@ function BoardPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <div className="bg-primary text-primary-foreground">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2 sm:px-6">
+          <span className="inline-flex h-7 items-center rounded-sm bg-primary-foreground px-2 text-sm font-extrabold tracking-tight text-primary">
+            KPN
+          </span>
+          <span className="text-xs font-medium uppercase tracking-wider opacity-90">
+            OTT · Outlook Bord
+          </span>
+        </div>
+      </div>
       <header className="border-b bg-card">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div>
