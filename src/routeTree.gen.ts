@@ -10,33 +10,52 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiBoardRouteImport } from './routes/api/board'
+import { Route as ApiBoardTeamSprintRouteImport } from './routes/api/board.$team.$sprint'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBoardRoute = ApiBoardRouteImport.update({
+  id: '/api/board',
+  path: '/api/board',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBoardTeamSprintRoute = ApiBoardTeamSprintRouteImport.update({
+  id: '/$team/$sprint',
+  path: '/$team/$sprint',
+  getParentRoute: () => ApiBoardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/board': typeof ApiBoardRouteWithChildren
+  '/api/board/$team/$sprint': typeof ApiBoardTeamSprintRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/board': typeof ApiBoardRouteWithChildren
+  '/api/board/$team/$sprint': typeof ApiBoardTeamSprintRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/board': typeof ApiBoardRouteWithChildren
+  '/api/board/$team/$sprint': typeof ApiBoardTeamSprintRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/board' | '/api/board/$team/$sprint'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/board' | '/api/board/$team/$sprint'
+  id: '__root__' | '/' | '/api/board' | '/api/board/$team/$sprint'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiBoardRoute: typeof ApiBoardRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +67,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/board': {
+      id: '/api/board'
+      path: '/api/board'
+      fullPath: '/api/board'
+      preLoaderRoute: typeof ApiBoardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/board/$team/$sprint': {
+      id: '/api/board/$team/$sprint'
+      path: '/$team/$sprint'
+      fullPath: '/api/board/$team/$sprint'
+      preLoaderRoute: typeof ApiBoardTeamSprintRouteImport
+      parentRoute: typeof ApiBoardRoute
+    }
   }
 }
 
+interface ApiBoardRouteChildren {
+  ApiBoardTeamSprintRoute: typeof ApiBoardTeamSprintRoute
+}
+
+const ApiBoardRouteChildren: ApiBoardRouteChildren = {
+  ApiBoardTeamSprintRoute: ApiBoardTeamSprintRoute,
+}
+
+const ApiBoardRouteWithChildren = ApiBoardRoute._addFileChildren(
+  ApiBoardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiBoardRoute: ApiBoardRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
