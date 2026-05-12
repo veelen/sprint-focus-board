@@ -13,13 +13,14 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${PORT}`,
     trace: "retain-on-failure",
   },
-  webServer: {
-    command: `bun run dev`,
-    url: `http://127.0.0.1:${PORT}`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
-    stdout: "pipe",
-    stderr: "pipe",
-  },
+  // Reuse running dev server if present; otherwise start it.
+  webServer: process.env.PW_NO_SERVER
+    ? undefined
+    : {
+        command: `bun run dev`,
+        url: `http://127.0.0.1:${PORT}`,
+        reuseExistingServer: true,
+        timeout: 180_000,
+      },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 });
