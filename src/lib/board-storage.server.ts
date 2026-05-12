@@ -12,7 +12,7 @@ import {
   type TeamId,
 } from "./board-constants";
 
-const FILE = "/tmp/outlook-board.json";
+const FILE = process.env.OUTLOOK_BOARD_FILE ?? "/tmp/outlook-board.json";
 
 type Stored = {
   teamNames?: Record<string, string>;
