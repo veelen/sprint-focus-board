@@ -80,7 +80,7 @@ async function rollForward() {
   return res.json();
 }
 
-function BoardPage() {
+export function BoardPage() {
   const qc = useQueryClient();
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["board"],
