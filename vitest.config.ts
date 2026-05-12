@@ -1,8 +1,12 @@
 import { defineConfig } from "vitest/config";
-import tsconfigPaths from "vite-tsconfig-paths";
+import path from "path";
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   test: {
     environment: "jsdom",
     globals: true,
@@ -10,5 +14,10 @@ export default defineConfig({
     include: ["tests/**/*.test.{ts,tsx}"],
     exclude: ["tests/e2e/**", "node_modules/**"],
     css: false,
+    server: {
+      deps: {
+        inline: ["@tanstack/react-router"],
+      },
+    },
   },
 });
