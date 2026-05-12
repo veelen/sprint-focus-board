@@ -1,11 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = Number(process.env.PORT ?? 4173);
+const PORT = Number(process.env.PORT ?? 8080);
 
 export default defineConfig({
   testDir: "./tests/e2e",
   timeout: 60_000,
   fullyParallel: false,
+  workers: 1,
   retries: 0,
   reporter: [["list"]],
   use: {
@@ -13,12 +14,12 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: `OUTLOOK_BOARD_FILE=/tmp/outlook-board-e2e.json bun run build && OUTLOOK_BOARD_FILE=/tmp/outlook-board-e2e.json bun run preview --port ${PORT}`,
+    command: `bun run dev`,
     url: `http://127.0.0.1:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    stdout: "pipe",
+    stderr: "pipe",
   },
-  projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-  ],
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 });
