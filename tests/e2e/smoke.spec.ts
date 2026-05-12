@@ -1,10 +1,17 @@
-import { test, expect } from "@playwright/test";
-import { promises as fs } from "fs";
+import { test, expect, request } from "@playwright/test";
 
-const STORAGE = "/tmp/outlook-board-e2e.json";
-
-test.beforeEach(async () => {
-  await fs.rm(STORAGE, { force: true });
+// Reset board state through the API before each test so the smoke test is hermetic
+// regardless of where the dev server stores data.
+test.beforeEach(async ({ baseURL }) => {
+  const ctx = await request.newContext({ baseURL });
+  const res = await ctx.get("/api/board");
+  const board = await res.json();
+  for (const team of board.teams) {
+    for (const sprint of board.sprints) {
+      await ctx.put(`/api/board/${team.id}/${sprint.id}`, { data: { goals: [] } });
+    }
+  }
+  await ctx.dispose();
 });
 
 test("smoke: open board, edit TeamA/S0, save, reload, verify persistence", async ({ page }) => {
