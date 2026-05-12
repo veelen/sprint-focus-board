@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { promises as fs } from "fs";
 import path from "path";
 import os from "os";
@@ -8,6 +8,7 @@ let tmpFile: string;
 beforeEach(async () => {
   tmpFile = path.join(os.tmpdir(), `board-test-${Date.now()}-${Math.random()}.json`);
   process.env.OUTLOOK_BOARD_FILE = tmpFile;
+  vi.resetModules();
 });
 
 afterEach(async () => {
@@ -16,10 +17,7 @@ afterEach(async () => {
 });
 
 async function freshStorage() {
-  // re-import to pick up env var (module cached, but FILE captured at module load)
-  // workaround: dynamic import with cache-busting query
-  const mod = await import(`@/lib/board-storage.server?cb=${Math.random()}`);
-  return mod;
+  return await import("@/lib/board-storage.server");
 }
 
 describe("board-storage", () => {
