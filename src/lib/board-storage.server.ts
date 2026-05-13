@@ -35,11 +35,18 @@ function emptyCells(): Record<string, { goals: string[] }> {
 // reliably persist writes across requests/isolates — without this the PUT
 // would succeed in-handler but the next GET would read an empty file.
 // Keyed off globalThis so HMR doesn't reset it during dev.
+// Key cache by FILE path so tests pointing OUTLOOK_BOARD_FILE at a fresh
+// tmp file get a fresh cache entry automatically.
 const CACHE_KEY = "__outlookBoardCache__";
 type CacheHolder = { value: Stored | null };
-const g = globalThis as unknown as Record<string, CacheHolder | undefined>;
-const cache: CacheHolder = g[CACHE_KEY] ?? { value: null };
-g[CACHE_KEY] = cache;
+const g = globalThis as unknown as Record<string, Map<string, CacheHolder> | undefined>;
+const allCaches: Map<string, CacheHolder> = g[CACHE_KEY] ?? new Map();
+g[CACHE_KEY] = allCaches;
+function getCache(): CacheHolder {
+  let c = allCaches.get(FILE);
+  if (!c) { c = { value: null }; allCaches.set(FILE, c); }
+  return c;
+}
 
 async function readStored(): Promise<Stored> {
   if (cache.value) return cache.value;
