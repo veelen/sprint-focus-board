@@ -30,17 +30,49 @@ function emptyCells(): Record<string, { goals: string[] }> {
   return cells;
 }
 
+// In-memory cache, authoritative within a single worker/process. Required
+// because the Cloudflare Worker runtime's virtual /tmp filesystem does not
+// reliably persist writes across requests/isolates — without this the PUT
+// would succeed in-handler but the next GET would read an empty file.
+// Keyed off globalThis so HMR doesn't reset it during dev.
+// Key cache by FILE path so tests pointing OUTLOOK_BOARD_FILE at a fresh
+// tmp file get a fresh cache entry automatically.
+const CACHE_KEY = "__outlookBoardCache__";
+type CacheHolder = { value: Stored | null };
+const g = globalThis as unknown as Record<string, Map<string, CacheHolder> | undefined>;
+const allCaches: Map<string, CacheHolder> = g[CACHE_KEY] ?? new Map();
+g[CACHE_KEY] = allCaches;
+function getCache(): CacheHolder {
+  let c = allCaches.get(FILE);
+  if (!c) { c = { value: null }; allCaches.set(FILE, c); }
+  return c;
+}
+
 async function readStored(): Promise<Stored> {
+  const cache = getCache();
+  if (cache.value) return cache.value;
   try {
     const raw = await fs.readFile(FILE, "utf8");
-    return JSON.parse(raw) as Stored;
+    cache.value = JSON.parse(raw) as Stored;
   } catch {
-    return {};
+    cache.value = {};
   }
+  return cache.value;
 }
 
 async function writeStored(s: Stored): Promise<void> {
-  await fs.writeFile(FILE, JSON.stringify(s, null, 2), "utf8");
+  getCache().value = s;
+  // Best-effort file persistence — may be a no-op in some serverless runtimes.
+  try {
+    await fs.writeFile(FILE, JSON.stringify(s, null, 2), "utf8");
+  } catch {
+    // ignore: in-memory cache remains the source of truth for this process
+  }
+}
+
+// Test helper: reset the in-process cache.
+export function __resetBoardCache() {
+  getCache().value = null;
 }
 
 export async function readBoard(): Promise<Board> {
