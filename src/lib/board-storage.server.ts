@@ -39,8 +39,10 @@ function emptyCells(): Record<string, { goals: string[] }> {
 // tmp file get a fresh cache entry automatically.
 const CACHE_KEY = "__outlookBoardCache__";
 type CacheHolder = { value: Stored | null };
-const g = globalThis as unknown as Record<string, Map<string, CacheHolder> | undefined>;
-const allCaches: Map<string, CacheHolder> = g[CACHE_KEY] ?? new Map();
+const g = globalThis as unknown as Record<string, unknown>;
+const existing = g[CACHE_KEY];
+const allCaches: Map<string, CacheHolder> =
+  existing instanceof Map ? (existing as Map<string, CacheHolder>) : new Map();
 g[CACHE_KEY] = allCaches;
 function getCache(): CacheHolder {
   let c = allCaches.get(FILE);
