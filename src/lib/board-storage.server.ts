@@ -49,6 +49,7 @@ function getCache(): CacheHolder {
 }
 
 async function readStored(): Promise<Stored> {
+  const cache = getCache();
   if (cache.value) return cache.value;
   try {
     const raw = await fs.readFile(FILE, "utf8");
@@ -60,7 +61,7 @@ async function readStored(): Promise<Stored> {
 }
 
 async function writeStored(s: Stored): Promise<void> {
-  cache.value = s;
+  getCache().value = s;
   // Best-effort file persistence — may be a no-op in some serverless runtimes.
   try {
     await fs.writeFile(FILE, JSON.stringify(s, null, 2), "utf8");
@@ -69,9 +70,9 @@ async function writeStored(s: Stored): Promise<void> {
   }
 }
 
-// Test helper: reset the in-process cache between tests.
+// Test helper: reset the in-process cache.
 export function __resetBoardCache() {
-  cache.value = null;
+  getCache().value = null;
 }
 
 export async function readBoard(): Promise<Board> {
